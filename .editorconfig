@@ -1,0 +1,4 @@
+root = true
+
+[*.js]
+ident_size = 2
