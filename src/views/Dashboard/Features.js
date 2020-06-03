@@ -10,27 +10,32 @@ const items = [
     name: "Resto",
     iconName: IconName.fork,
     link: "resto",
+    color: Colors.brandResto,
   },
   {
     name: "Pedagang Keliling",
     iconName: IconName.fork,
     link: "pedagang",
+    color: Colors.brandPedagang,
   },
   {
     name: "Warung\n Emak",
     iconName: IconName.store,
     link: "warung",
+    color: Colors.brandWarung,
   },
 
   {
     name: "Komunitas",
     iconName: IconName.people,
     link: "komunitas",
+    color: Colors.brandKomunitas,
   },
   {
     name: "Mak Comblang",
     iconName: IconName.hand,
     link: "makcomblang",
+    color: Colors.brandMakcomblang,
   },
 ]
 
@@ -41,7 +46,11 @@ const renderButtons = () =>
       key={i}
       activeOpacity={0.5}
       onPress={() => navigationServices.Navigate(val.link)}>
-      <View style={styles.buttonCircle}>
+      <View
+        style={{
+          ...styles.buttonCircle,
+          ...(val.color ? { backgroundColor: val.color } : {}),
+        }}>
         <Icon
           name={val.iconName}
           color={Colors.themeLight}

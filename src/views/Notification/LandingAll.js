@@ -1,11 +1,12 @@
-import React, { Component, useState } from "react"
-import { View, StyleSheet, ScrollView } from "react-native"
+import React, { Component, useState, useCallback } from "react"
+import { View, StyleSheet, ScrollView, StatusBar } from "react-native"
 import PropTypes from "prop-types"
 import { Text, Divider, Content } from "_atoms"
 import { Spaces, Colors } from "_styles"
 import { formatDate, dateToUnix } from "_utils"
 import { IconName, Icon } from "_c_a_icons"
 import { NotificationItem } from "_molecules"
+import { useFocusEffect } from "@react-navigation/native"
 
 const DATA = [
   {
@@ -33,6 +34,13 @@ const DATA = [
 
 const LandingAll = () => {
   const [data, setData] = useState(DATA)
+
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBackgroundColor(Colors.themeLight)
+      StatusBar.setBarStyle("dark-content")
+    }, []),
+  )
 
   return (
     <ScrollView>

@@ -142,6 +142,7 @@ class Landing extends Component {
               reviewers={data.reviewers}
               address={data.address}
               onClickDetail={this.gotoDetail}
+              featureName="Warung"
             />
 
             <Divider />
@@ -154,7 +155,7 @@ class Landing extends Component {
             <View style={styles.search}>
               <Button
                 style={styles.searchButton}
-                text="Cari Menu"
+                text="Cari Produk"
                 type="secondary"
                 iconName={IconName.chevronRight}
                 iconPosition="right"
@@ -180,6 +181,7 @@ class Landing extends Component {
                   reducerName="warungReducer"
                   addAction={addItem}
                   reduceAction={reduceItem}
+                  onClickOverall={this.openSheet}
                 />
               </React.Fragment>
             ))}

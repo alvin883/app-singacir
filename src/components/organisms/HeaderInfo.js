@@ -15,6 +15,7 @@ const HeaderInfo = ({
   onClickFavorite,
   onClickDetail,
   style,
+  featureName,
 }) => {
   const isActionButton = typeof onClickDetail === "function"
   return (
@@ -33,7 +34,7 @@ const HeaderInfo = ({
           <Button
             style={styles.bottomButton}
             type="secondary"
-            text="Lihat Detail Resto"
+            text={`Lihat Detail ${featureName}`}
             iconName={IconName.chevronRight}
             iconPosition="right"
             onPress={onClickDetail}
@@ -55,6 +56,7 @@ HeaderInfo.propTypes = {
   onClickFavorite: PropTypes.func.isRequired,
   onClickDetail: PropTypes.func,
   style: ViewPropTypes.style,
+  featureName: PropTypes.string.isRequired,
 }
 
 HeaderInfo.defaultProps = {

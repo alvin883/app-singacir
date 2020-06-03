@@ -8,6 +8,12 @@ import OrderItems from "./OrderItems"
 import { connect } from "react-redux"
 import { convertToCurrency, convertToNumber, navigationServices } from "_utils"
 import { warung } from "_actions"
+import {
+  orderMethodOptions,
+  orderMethodOptionsRaw,
+  paymentOptions,
+  paymentOptionsRaw,
+} from "_types"
 
 const MINIMUM_TIPS = 2000
 const WARNING_TIPS = "Minimum tips adalah Rp 2.000"
@@ -16,17 +22,8 @@ class Checkout extends Component {
     address: "Jl. Gatot Subroto, Jakarta",
     tips: "2.000",
     isTipsWarning: false,
-    paymentOptions: [
-      {
-        label: "Bank BCA",
-        value: "bca",
-      },
-      {
-        label: "Bank BNI",
-        value: "bni",
-      },
-    ],
-    paymentMethod: null,
+    orderMethod: orderMethodOptionsRaw.diantar.value,
+    paymentMethod: paymentOptionsRaw.tunai.value,
   }
 
   handleChangeTips = text => {
@@ -57,9 +54,11 @@ class Checkout extends Component {
     })
   }
 
-  handleChangePayment = paymentMethod => {
-    console.log("handleChangePayment: ", paymentMethod)
-    this.setState({ paymentMethod })
+  handleInputSelect = (selected, stateName) => {
+    console.log("handleInput  Select: ", selected, stateName)
+    this.setState({
+      [stateName]: selected,
+    })
   }
 
   onSubmit = () => {
@@ -73,13 +72,14 @@ class Checkout extends Component {
   render() {
     const { summary } = this.props
     const { price, discount_price } = summary
-    const { isTipsWarning, tips } = this.state
+    const { isTipsWarning, tips, orderMethod } = this.state
     const isDiscount = discount_price
     const totalDiscount = isDiscount ? price - discount_price : 0
     const total = discount_price + convertToNumber(tips)
 
     // TODO: Make this dynamic
     const adminFee = 5000
+    const isSelfOrder = orderMethod === orderMethodOptionsRaw.ambilsendiri.value
 
     return (
       <ScrollView style={styles.wrapper}>
@@ -108,23 +108,41 @@ class Checkout extends Component {
             </View>
           )}
 
-          <View style={styles.info}>
-            <Text style={styles.infoKey}>Biaya Transaksi</Text>
-            <Text style={styles.infoValue}>{convertToCurrency(adminFee)}</Text>
-          </View>
+          {!isSelfOrder ? (
+            <View style={styles.info}>
+              <Text style={styles.infoKey}>Biaya Transaksi</Text>
+              <Text style={styles.infoValue}>
+                {convertToCurrency(adminFee)}
+              </Text>
+            </View>
+          ) : null}
 
           <Divider />
 
           <View style={styles.tips}>
-            <Input
-              label="Beri Tips"
-              placeholder="Masukkan jumlah tips ..."
-              keyboardType="number-pad"
-              defaultValue="2000"
-              onChangeText={this.handleChangeTips}
-              value={this.state.tips}
-              warning={isTipsWarning ? WARNING_TIPS : null}
-              status={isTipsWarning ? "error" : "normal"}
+            {!isSelfOrder ? (
+              <Input
+                style={styles.inputTips}
+                label="Beri Tips"
+                placeholder="Masukkan jumlah tips ..."
+                keyboardType="number-pad"
+                defaultValue="2000"
+                onChangeText={this.handleChangeTips}
+                value={this.state.tips}
+                warning={isTipsWarning ? WARNING_TIPS : null}
+                status={isTipsWarning ? "error" : "normal"}
+              />
+            ) : null}
+
+            <InputSelect
+              name="orderMethod"
+              options={orderMethodOptions}
+              label="Pengambilan"
+              value={this.state.orderMethod}
+              placeholder="Pilih metode pengambilan ..."
+              onSelect={selected =>
+                this.handleInputSelect(selected, "orderMethod")
+              }
             />
           </View>
 
@@ -139,10 +157,13 @@ class Checkout extends Component {
 
           <View style={styles.bottom}>
             <InputSelect
-              options={this.state.paymentOptions}
+              options={paymentOptions}
               label="Metode Pembayaran"
               placeholder="Pilih jenis pembayaran ..."
-              onSelect={this.handleChangePayment}
+              value={this.state.paymentMethod}
+              onSelect={selected =>
+                this.handleInputSelect(selected, "paymentMethod")
+              }
             />
 
             <Button
@@ -160,6 +181,9 @@ class Checkout extends Component {
 }
 
 const styles = StyleSheet.create({
+  // container: {
+  //   paddingHorizontal: Spaces.container,
+  // },
   wrapperInner: {
     paddingBottom: 40,
   },
@@ -181,6 +205,9 @@ const styles = StyleSheet.create({
   },
   tips: {
     paddingHorizontal: Spaces.container,
+  },
+  inputTips: {
+    marginBottom: 26,
   },
   totalKey: {
     fontSize: FontSizes.medium,

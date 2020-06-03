@@ -47,7 +47,7 @@ const BlockItem = ({
         )}
 
         <View style={styles.rightBottom}>
-          {type === "default" && (
+          {type === "default" && time && distance && (
             <View style={styles.rightBottomLeft}>
               <Icon
                 name={IconName.clockOutline}

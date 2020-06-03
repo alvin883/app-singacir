@@ -14,12 +14,14 @@ const MerchantMenu = ({
   name,
   price,
   discount_price,
+  description,
   style,
   reducerName,
   addAction,
   reduceAction,
   withColorIndicator,
   isReview,
+  onClickOverall,
 }) => {
   /**
    * Whether to render with action buttons or not. If this false, it will
@@ -71,7 +73,24 @@ const MerchantMenu = ({
   }
 
   return (
-    <View style={{ ...styles.wrapper, ...style }}>
+    <TouchableOpacity
+      style={{ ...styles.wrapper, ...style }}
+      activeOpacity={onClickOverall ? 0.8 : 1}
+      onPress={
+        onClickOverall
+          ? () => {
+              onClickOverall({
+                id,
+                image,
+                title: name,
+                price,
+                discount_price,
+                description,
+              })
+            }
+          : null
+      }>
+      {/* <TouchableOpacity> */}
       <View style={styles.left}>
         <ImageWithFallback source={image} style={styles.image} />
       </View>
@@ -152,7 +171,8 @@ const MerchantMenu = ({
           </View>
         )}
       </View>
-    </View>
+      {/* </TouchableOpacity> */}
+    </TouchableOpacity>
   )
 }
 
@@ -168,6 +188,7 @@ MerchantMenu.propTypes = {
   reduceAction: PropTypes.func,
   withColorIndicator: PropTypes.bool,
   isReview: PropTypes.bool,
+  onClickOverall: PropTypes.func,
 }
 
 MerchantMenu.defaultProps = {

@@ -1,5 +1,12 @@
-import React, { Component, useState, useEffect } from "react"
-import { View, ScrollView, StyleSheet, Dimensions, Image } from "react-native"
+import React, { Component, useState, useEffect, useCallback } from "react"
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  Image,
+  StatusBar,
+} from "react-native"
 import PropTypes from "prop-types"
 import { Illustrations, Button } from "_atoms"
 import { Spaces, Colors } from "_styles"
@@ -7,6 +14,7 @@ import { IconName } from "_c_a_icons"
 import { sample, navigationServices } from "_utils"
 import { BlockList } from "_organisms"
 import IllustrationCommunity from "_assets/images/illustration-community.png"
+import { useFocusEffect } from "@react-navigation/native"
 
 const gotoCommunity = ({ id, title }) => {
   console.log("KomunitasLanding - gotoCommunity: ", id, title)
@@ -22,6 +30,13 @@ const gotoCreate = () => {
 }
 
 const Landing = () => {
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBackgroundColor(Colors.brandKomunitas)
+      StatusBar.setBarStyle("light-content")
+    }, []),
+  )
+
   return (
     <ScrollView>
       <View style={styles.hero}>

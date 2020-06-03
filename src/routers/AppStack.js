@@ -8,6 +8,7 @@ import KomunitasStack from "./Komunitas"
 import WarungStack from "./WarungStack"
 import PedagangStack from "./PedagangStack"
 import MakComblangStack from "./MakComblangStack"
+import { Colors } from "_styles"
 
 const Stack = createStackNavigator()
 
@@ -29,6 +30,10 @@ const AppStack = () => (
       name="warung"
       component={WarungStack}
       options={{ headerShown: false }}
+      initialParams={{
+        customBg: Colors.brandWarung,
+        customColor: Colors.themeLight,
+      }}
     />
 
     <Stack.Screen
@@ -41,12 +46,20 @@ const AppStack = () => (
       name="komunitas"
       component={KomunitasStack}
       options={{ headerShown: false }}
+      initialParams={{
+        customBg: Colors.brandKomunitas,
+        customColor: Colors.themeLight,
+      }}
     />
 
     <Stack.Screen
       name="makcomblang"
       component={MakComblangStack}
       options={{ headerShown: false }}
+      initialParams={{
+        customBg: Colors.brandMakcomblang,
+        customColor: Colors.themeLight,
+      }}
     />
 
     <Stack.Screen

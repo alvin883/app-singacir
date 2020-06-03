@@ -1,5 +1,5 @@
-import React, { Component } from "react"
-import { View, Text, StyleSheet, ScrollView } from "react-native"
+import React, { Component, useCallback } from "react"
+import { View, Text, StyleSheet, ScrollView, StatusBar } from "react-native"
 import PropTypes from "prop-types"
 import { ImageSlider, SemarBox, Divider } from "_atoms"
 import { Icon, IconName } from "_c_a_icons"
@@ -14,9 +14,13 @@ import Sample1 from "_assets/images/sample-1.jpg"
 import Sample2 from "_assets/images/sample-2.jpg"
 import Sample3 from "_assets/images/sample-3.jpg"
 import Sample4 from "_assets/images/sample-4.jpg"
+import { Colors } from "_styles"
+import { useState } from "react"
+import { useEffect } from "react"
+import { useFocusEffect } from "@react-navigation/native"
 
-class Dashboard extends Component {
-  state = {
+const Dashboard = () => {
+  const [state, setState] = useState({
     imageSlider: {
       images: [Sample1, Sample2, Sample3, Sample4],
     },
@@ -51,35 +55,46 @@ class Dashboard extends Component {
         {
           url: "https://instagram.com",
           iconName: IconName.instagram,
+          color: "#f00075",
         },
         {
-          url: "https://spotify.com",
-          iconName: IconName.spotify,
-          color: "#1db954",
+          url: "https://linkedin.com",
+          iconName: IconName.linkedin,
+          color: "#0a66c2",
+        },
+        {
+          url: "https://tiktok.com",
+          iconName: IconName.tiktok,
+          color: "#121212",
         },
       ],
     },
-  }
+  })
 
-  render() {
-    const { imageSlider, promo, advertise, hotMenu, socialMedia } = this.state
+  const { imageSlider, promo, advertise, hotMenu, socialMedia } = state
 
-    return (
-      <View style={{ flex: 1 }}>
-        <Header style={{ flex: 1 }} />
-        <ScrollView>
-          <ImageSlider {...imageSlider} />
-          <SemarBox />
-          <Features />
-          <Promo {...promo} />
-          <Advertise {...advertise} />
-          <HotMenu {...hotMenu} />
-          <Divider style={{ marginTop: 30 }} />
-          <SocialMedia {...socialMedia} />
-        </ScrollView>
-      </View>
-    )
-  }
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBackgroundColor(Colors.brandPurple)
+      StatusBar.setBarStyle("light-content")
+    }, []),
+  )
+
+  return (
+    <View style={{ flex: 1 }}>
+      <Header style={{ flex: 1 }} />
+      <ScrollView>
+        <ImageSlider {...imageSlider} />
+        <SemarBox />
+        <Features />
+        <Promo {...promo} />
+        <Advertise {...advertise} />
+        <HotMenu {...hotMenu} />
+        <Divider style={{ marginTop: 30 }} />
+        <SocialMedia {...socialMedia} />
+      </ScrollView>
+    </View>
+  )
 }
 
 export default Dashboard

@@ -43,7 +43,7 @@ const styles = StyleSheet.create({
     elevation: 3,
     paddingVertical: 16,
     paddingHorizontal: Spaces.container,
-    backgroundColor: Colors.brandPrimary,
+    backgroundColor: Colors.brandPurple,
   },
   brand: {
     color: Colors.themeLight,

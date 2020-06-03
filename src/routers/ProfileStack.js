@@ -6,6 +6,7 @@ import {
   ProfileEditPass,
   ProfileBalanceHistory,
   ProfileDonation,
+  ProfileDonationHistory,
 } from "_views"
 import StackOptions from "_routers/config/StackOptions"
 
@@ -41,6 +42,12 @@ const ProfileStack = () => (
       name="ProfileDonation"
       component={ProfileDonation}
       options={{ title: "Donasi" }}
+    />
+
+    <Stack.Screen
+      name="ProfileDonationHistory"
+      component={ProfileDonationHistory}
+      options={{ title: "History Donasi" }}
     />
   </Stack.Navigator>
 )

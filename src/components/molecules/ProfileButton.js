@@ -1,10 +1,18 @@
 import React from "react"
-import { TouchableOpacity, View, ViewPropTypes, StyleSheet } from "react-native"
+import {
+  TouchableOpacity,
+  View,
+  ViewPropTypes,
+  StyleSheet,
+  ImageBackground,
+  Dimensions,
+} from "react-native"
 import PropTypes from "prop-types"
 import { hexToRgb } from "_utils"
-import { Colors } from "_styles"
+import { Colors, Spaces } from "_styles"
 import { Text } from "_atoms"
 import { Icon, IconName } from "_c_a_icons"
+import Batik from "_assets/images/batik.jpeg"
 
 const ProfileButton = ({
   title,
@@ -13,6 +21,7 @@ const ProfileButton = ({
   onClick,
   colorPreset,
   style,
+  withBatik,
 }) => {
   const isNormal = colorPreset === "normal"
   const colorBoxNormal = Colors.themeLight
@@ -27,8 +36,15 @@ const ProfileButton = ({
       style={{
         ...styles.wrapper,
         ...style,
-        ...{ backgroundColor: colorBox },
+        ...(withBatik
+          ? { backgroundColor: Colors.brandPrimary }
+          : { backgroundColor: colorBox }),
       }}>
+      <ImageBackground
+        source={withBatik ? Batik : null}
+        style={styles.boxBackground}
+        resizeMode="cover"
+      />
       <View>
         <Text
           style={{
@@ -76,20 +92,33 @@ ProfileButton.propTypes = {
   onClick: PropTypes.func.isRequired,
   colorPreset: PropTypes.oneOf(["normal", "secondary"]),
   style: ViewPropTypes.style,
+  withBatik: PropTypes.bool,
 }
 
 ProfileButton.defaultProps = {
   colorPreset: "normal",
+  withBatik: false,
 }
 
+const boxWidth = Dimensions.get("window").width - Spaces.container * 2
 const styles = StyleSheet.create({
   wrapper: {
     flexDirection: "row",
     justifyContent: "space-between",
     paddingVertical: 10,
     paddingHorizontal: 20,
+    overflow: "hidden",
     borderRadius: 4,
     backgroundColor: Colors.brandSecondary,
+  },
+  boxBackground: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    bottom: 0,
+    right: 0,
+    opacity: 0.15,
+    overflow: "hidden",
   },
   title: {
     opacity: 0.8,

@@ -13,6 +13,7 @@ const Items = ({
   addAction,
   reduceAction,
   withColorIndicator,
+  onClickOverall,
 }) =>
   items.map((val, index) => {
     const additionalStyle = index === 0 ? { style: { marginTop: 0 } } : {}
@@ -24,11 +25,13 @@ const Items = ({
         image={val.image}
         name={val.name}
         price={val.price}
+        description={val.description}
         discount_price={val.discount_price}
         reducerName={reducerName}
         addAction={addAction}
         reduceAction={reduceAction}
         withColorIndicator={withColorIndicator}
+        onClickOverall={onClickOverall}
         {...additionalStyle}
       />
     )
@@ -45,6 +48,7 @@ const MerchantMenuList = ({
   addAction,
   reduceAction,
   withColorIndicator,
+  onClickOverall,
 }) => {
   return (
     <View style={{ ...styles.wrapper, ...style }}>
@@ -60,6 +64,7 @@ const MerchantMenuList = ({
           addAction={addAction}
           reduceAction={reduceAction}
           withColorIndicator={withColorIndicator}
+          onClickOverall={onClickOverall}
         />
       </View>
     </View>
