@@ -1,10 +1,11 @@
-import React, { Component } from "react"
+import React, { Component, useState, useCallback } from "react"
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  StatusBar,
 } from "react-native"
 import PropTypes from "prop-types"
 import { Spaces, Colors } from "_styles"
@@ -12,74 +13,75 @@ import { sample, navigationServices } from "_utils"
 import { Button, Input } from "_atoms"
 import { Icon, IconName } from "_c_a_icons"
 import { BlockList } from "_organisms"
+import { useFocusEffect } from "@react-navigation/native"
 
-class Search extends Component {
-  state = {
-    keyword: "",
-    list: sample.RestoList,
+const Search = () => {
+  const [keyword, setKeyword] = useState("")
+  const [list, setList] = useState(sample.RestoList)
+
+  function goBack() {
+    navigationServices.GoBack()
   }
 
-  goBack = () => {
-    this.props.navigation.goBack()
-  }
-
-  searching = text => {
+  function searching(text) {
     console.log("searching: ", text)
   }
 
-  handleFilter = () => {
+  function handleFilter() {
     alert("handleFilter")
   }
 
-  handleSort = () => {
+  function handleSort() {
     alert("handleSort")
   }
 
-  gotoRestodetail = ({ id, title }) => {
+  function gotoRestodetail({ id, title }) {
     console.log("resto/search - gotoRestodetail: ", id, title)
     navigationServices.Navigate("resto/landing", { id, title })
   }
 
-  render() {
-    return (
-      <View style={styles.root}>
-        <View style={styles.header}>
-          <View style={styles.headerSearch}>
-            <Input
-              placeholder="Cari resto atau menu ..."
-              IconLeft={IconName.arrowLeft}
-              IconLeftClickable={true}
-              IconLeftOnclick={this.goBack}
-              stylePreset="boxed"
-              onChangeText={this.searching}
-            />
-          </View>
-          <View style={styles.headerControl}>
-            <Button
-              type="nude"
-              text="Filter"
-              iconName={IconName.filter}
-              onPress={this.handleFilter}
-            />
-            <Button
-              type="nude"
-              text="Urutkan"
-              iconName={IconName.sort}
-              onPress={this.handleSort}
-            />
-          </View>
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBackgroundColor(Colors.brandResto)
+      StatusBar.setBarStyle("light-content")
+    }, []),
+  )
+
+  return (
+    <View style={styles.root}>
+      <View style={styles.header}>
+        <View style={styles.headerSearch}>
+          <Input
+            placeholder="Cari resto atau menu ..."
+            IconLeft={IconName.arrowLeft}
+            IconLeftClickable={true}
+            IconLeftOnclick={goBack}
+            stylePreset="boxed"
+            onChangeText={searching}
+          />
         </View>
-        <ScrollView style={styles.scrollView}>
-          <View style={styles.wrapper}>
-            <BlockList
-              list={this.state.list}
-              onItemPress={this.gotoRestodetail}
-            />
-          </View>
-        </ScrollView>
+        <View style={styles.headerControl}>
+          <Button
+            type="nude"
+            text="Filter"
+            iconName={IconName.filter}
+            onPress={handleFilter}
+          />
+          <Button
+            type="nude"
+            text="Urutkan"
+            iconName={IconName.sort}
+            onPress={handleSort}
+          />
+        </View>
       </View>
-    )
-  }
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.wrapper}>
+          <BlockList list={list} onItemPress={gotoRestodetail} />
+        </View>
+      </ScrollView>
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({

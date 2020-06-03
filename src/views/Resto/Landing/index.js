@@ -142,6 +142,7 @@ class Landing extends Component {
               reviewers={data.reviewers}
               address={data.address}
               onClickDetail={this.gotoDetail}
+              featureName="Resto"
             />
 
             <Divider />
@@ -180,6 +181,7 @@ class Landing extends Component {
                   reducerName="restoReducer"
                   addAction={addItem}
                   reduceAction={reduceItem}
+                  onClickOverall={this.openSheet}
                 />
               </React.Fragment>
             ))}

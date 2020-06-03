@@ -8,6 +8,7 @@ import OrderItems from "./OrderItems"
 import { connect } from "react-redux"
 import { convertToCurrency, convertToNumber, navigationServices } from "_utils"
 import { resto } from "_actions"
+import { paymentOptions, paymentOptionsRaw } from "_types"
 
 const MINIMUM_TIPS = 2000
 const WARNING_TIPS = "Minimum tips adalah Rp 2.000"
@@ -16,17 +17,7 @@ class Checkout extends Component {
     address: "Jl. Gatot Subroto, Jakarta",
     tips: "2.000",
     isTipsWarning: false,
-    paymentOptions: [
-      {
-        label: "Bank BCA",
-        value: "bca",
-      },
-      {
-        label: "Bank BNI",
-        value: "bni",
-      },
-    ],
-    paymentMethod: null,
+    paymentMethod: paymentOptionsRaw.tunai.value,
   }
 
   handleChangeTips = text => {
@@ -139,9 +130,10 @@ class Checkout extends Component {
 
           <View style={styles.bottom}>
             <InputSelect
-              options={this.state.paymentOptions}
+              options={paymentOptions}
               label="Metode Pembayaran"
               placeholder="Pilih jenis pembayaran ..."
+              value={this.state.paymentMethod}
               onSelect={this.handleChangePayment}
             />
 

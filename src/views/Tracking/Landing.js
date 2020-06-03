@@ -1,7 +1,7 @@
-import React, { useState } from "react"
-import { ScrollView, View, StyleSheet } from "react-native"
+import React, { useState, useCallback } from "react"
+import { ScrollView, View, StyleSheet, StatusBar } from "react-native"
 import { Text, Button, Divider } from "_atoms"
-import { Spaces } from "_styles"
+import { Spaces, Colors } from "_styles"
 import { IconName } from "_c_a_icons"
 import {
   convertToCurrency,
@@ -11,6 +11,7 @@ import {
   navigationServices,
 } from "_utils"
 import { OrderItem } from "_molecules"
+import { useFocusEffect } from "@react-navigation/native"
 
 const DATA = [
   {
@@ -38,6 +39,13 @@ const DATA = [
 
 const Landing = () => {
   const [data, setData] = useState(DATA)
+
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBackgroundColor(Colors.themeLight)
+      StatusBar.setBarStyle("dark-content")
+    }, []),
+  )
 
   return (
     <ScrollView>

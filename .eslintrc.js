@@ -17,6 +17,7 @@ module.exports = {
           _reducers: "./src/reducers",
           _routers: "./src/routers",
           _styles: "./src/styles",
+          _types: "./src/types",
           _utils: "./src/utils",
           _views: "./src/views",
         },

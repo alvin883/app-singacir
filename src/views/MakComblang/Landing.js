@@ -1,5 +1,12 @@
-import React, { Component, useState, useEffect } from "react"
-import { View, ScrollView, StyleSheet, Dimensions, Image } from "react-native"
+import React, { Component, useState, useEffect, useCallback } from "react"
+import {
+  View,
+  ScrollView,
+  StyleSheet,
+  Dimensions,
+  Image,
+  StatusBar,
+} from "react-native"
 import PropTypes from "prop-types"
 import { Illustrations, Button } from "_atoms"
 import { Spaces, Colors } from "_styles"
@@ -7,6 +14,7 @@ import { IconName } from "_c_a_icons"
 import { sample, navigationServices } from "_utils"
 import { BlockList } from "_organisms"
 import IllustrationMakcomblang from "_assets/images/illustration-makcomblang.png"
+import { useFocusEffect } from "@react-navigation/native"
 
 const gotoDetail = ({ id, title }) => {
   console.log("MakComblangLanding - gotoDetail: ", id, title)
@@ -18,6 +26,13 @@ const gotoDetail = ({ id, title }) => {
 }
 
 const Landing = () => {
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBackgroundColor(Colors.brandMakcomblang)
+      StatusBar.setBarStyle("light-content")
+    }, []),
+  )
+
   return (
     <ScrollView>
       <View style={styles.hero}>
