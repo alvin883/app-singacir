@@ -1,4 +1,4 @@
-import React, { Component, useRef, useState } from "react"
+import React, { Component, useRef, useState, useCallback } from "react"
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   Image,
   ScrollView,
   ActivityIndicator,
+  StatusBar,
 } from "react-native"
 import { Button, Input } from "_atoms"
 import { Spaces, Colors, FontFamily } from "_styles"
@@ -15,48 +16,91 @@ import AsyncStorage from "@react-native-community/async-storage"
 import { auth } from "_actions"
 import { useDispatch } from "react-redux"
 import { navigationServices, hexToRgb, validation } from "_utils"
+import axios from "axios"
+import { useFocusEffect } from "@react-navigation/native"
+import JwtDecode from "jwt-decode"
 
 const Login = () => {
-  const emailRef = useRef()
-  const passwordRef = useRef()
+  const refEmail = useRef()
+  const refPassword = useRef()
   const dispatch = useDispatch()
-  const [isLoading, setIsLoading] = useState(false)
-  const [errorState, setErrorState] = useState({ email: null, password: null })
+  const [isLoading, setLoading] = useState(false)
+  const [state, setState] = useState({
+    email: "",
+    emailWarning: "",
+    password: "",
+    passwordWarning: "",
+  })
+
+  const checkEmail = (str = state.email) => {
+    return validation.validate("email", str)
+  }
+
+  const checkPassword = (str = state.password) => {
+    return validation.validate("loginPassword", str)
+  }
 
   const clickLogin = () => {
-    const email = emailRef.current.state.text
-    const password = passwordRef.current.state.text
+    const errorEmail = checkEmail()
+    const errorPassword = checkPassword()
 
-    // Validation
-    const vEmail = validation.validate("email", email)
-    const vPassword = validation.validate("loginPassword", password)
-
-    // If everything doen't have an error, then it's all valid => true
-    const isValid = !vEmail && !vPassword
-
-    setIsLoading(true)
-
-    if (!isValid) {
-      setErrorState({ email: vEmail, password: vPassword })
-      return setIsLoading(false)
+    if (errorEmail || errorPassword) {
+      setState({
+        ...state,
+        emailWarning: errorEmail,
+        passwordWarning: errorPassword,
+      })
+      return false
     }
 
-    if (email === "user@example.com" && password === "pw12345") {
-      const user = {
-        token: "alvin123",
-        username: "User",
-      }
+    setLoading(true)
+    setState({
+      ...state,
+      emailWarning: "",
+      passwordWarning: "",
+    })
 
-      AsyncStorage.setItem("user", JSON.stringify(user))
-        .then(() => dispatch(auth.login(user)))
-        .catch(err => {
-          console.log(err)
-          setIsLoading(false)
-          alert("Ada kesalahan ketika login, cobalah beberapa saat lagi")
-        })
-    } else {
-      setIsLoading(false)
-    }
+    axios
+      .post("auth/loginUser", {
+        email: state.email,
+        password: state.password,
+      })
+      .then(response => {
+        const token = response.data.data
+        const data = JwtDecode(token)
+        data.token = token
+
+        // console.log("response: ", response)
+        console.log("token: ", response.data.data)
+
+        AsyncStorage.setItem("token", token)
+          .then(() => {
+            axios.defaults.headers.common = { Authorization: `Bearer ${token}` }
+            dispatch(auth.login(data))
+          })
+          .catch(err => {
+            console.log(err)
+            setLoading(false)
+            alert("Ada kesalahan ketika login, cobalah beberapa saat lagi")
+          })
+      })
+      .catch(error => {
+        console.log(error)
+        setLoading(false)
+        if (error?.response?.data?.message) {
+          if (error.response.data.message == "User password is invalid") {
+            return alert("User atau password anda salah")
+          } else if (typeof error.response.data.message == "string") {
+            return alert(error.response.data.message)
+          } else if (error.response.data.message === "User email not found") {
+            return alert("Email tidak terdaftar")
+          } else {
+            return alert(error.response.data.message)
+          }
+        }
+
+        alert("Ada kesalahan ketika login, cobalah beberapa saat lagi")
+      })
   }
 
   const clickGoogle = () => {
@@ -79,6 +123,13 @@ const Login = () => {
     navigationServices.Navigate("LupaPasswordLanding")
   }
 
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBackgroundColor(Colors.themeLight)
+      StatusBar.setBarStyle("dark-content")
+    }, []),
+  )
+
   return (
     <ScrollView>
       <View style={styles.container}>
@@ -87,20 +138,36 @@ const Login = () => {
           <Input
             label="Email"
             placeholder="Email anda ..."
-            ref={emailRef}
+            ref={refEmail}
             editable={!isLoading}
-            warning={errorState.email}
-            status={errorState.email ? "error" : "normal"}
+            warning={state.emailWarning}
+            status={state.emailWarning ? "error" : "normal"}
+            onChangeText={text => {
+              const warning = checkEmail(text)
+              setState({
+                ...state,
+                email: text,
+                emailWarning: warning,
+              })
+            }}
           />
           <Input
             label="Kata Sandi"
             placeholder="Password anda ..."
             secureTextEntry={true}
             style={styles.input}
-            ref={passwordRef}
+            ref={refPassword}
             editable={!isLoading}
-            warning={errorState.password}
-            status={errorState.password ? "error" : "normal"}
+            warning={state.passwordWarning}
+            status={state.passwordWarning ? "error" : "normal"}
+            onChangeText={text => {
+              const warning = checkPassword(text)
+              setState({
+                ...state,
+                password: text,
+                passwordWarning: warning,
+              })
+            }}
           />
           <Button
             style={styles.button}

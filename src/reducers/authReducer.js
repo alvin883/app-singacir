@@ -1,10 +1,14 @@
 import { auth } from "_actions"
+import axios from "axios"
 
 const actionName = auth.actionName
 
 const initState = {
+  userId: null,
+  fullname: null,
+  email: null,
+  iat: null,
   token: null,
-  username: null,
 }
 
 const authReducer = (state = initState, action) => {
@@ -19,6 +23,7 @@ const authReducer = (state = initState, action) => {
 
     case actionName.AUTH_LOGOUT:
       newState = initState
+      delete axios.defaults.headers.common["Authorization"]
       console.log("authReducer: ", newState)
 
       return newState

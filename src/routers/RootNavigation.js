@@ -8,6 +8,8 @@ import AsyncStorage from "@react-native-community/async-storage"
 import { auth } from "_actions"
 import store from "../store"
 import { useDispatch } from "react-redux"
+import JwtDecode from "jwt-decode"
+import axios from "axios"
 
 const Root = () => {
   const dispatch = useDispatch()
@@ -17,32 +19,39 @@ const Root = () => {
   })
 
   const checkLogin = () => {
-    AsyncStorage.getItem("user")
-      .then(userRaw => {
-        if (userRaw) {
-          // When user have logged in
-          const user = JSON.parse(userRaw)
+    AsyncStorage.getItem("token")
+      .then(token => {
+        if (token) {
+          const data = JwtDecode(token)
 
-          // Store user data
+          data.token = token
+          axios.defaults.headers.common = { Authorization: `Bearer ${token}` }
+
           setState({ isLogin: true, isLoading: false })
-          dispatch(auth.login(user))
+          dispatch(auth.login(data))
         } else {
           // When user is not login
+          console.log("checkLogin: not logged-in")
           return setState({ isLogin: false, isLoading: false })
         }
       })
 
       // When AsyncStorage trigger an error
-      .catch(err => setState({ isLogin: false, isLoading: false }))
+      .catch(err => {
+        console.log("RootNavigation.js - checkLogin: error", err)
+        setState({ isLogin: false, isLoading: false })
+      })
   }
 
   const handleStoreChange = () => {
     const prevState = state
     const user = store.getState().authReducer
-    const isLogin = user.token ? true : false
+    const isLogin = user.userId !== null ? true : false
     const shouldUpdate = isLogin !== prevState.isLogin
 
     if (shouldUpdate) setState({ isLogin: isLogin, isLoading: false })
+
+    console.log("handleStoreChange:", user)
   }
 
   const unsubscribe = store.subscribe(handleStoreChange)
@@ -61,6 +70,7 @@ const Root = () => {
 
   if (state.isLoading) return <Loading />
 
+  console.log(state)
   return state.isLogin ? <AppStack /> : <AuthStack />
 }
 

@@ -3,16 +3,23 @@ import { View, Text, Image, StyleSheet, ViewPropTypes } from "react-native"
 import PropTypes from "prop-types"
 import { sourcePropType, hexToRgb } from "_utils"
 import { Colors, FontSizes, FontFamily } from "_styles"
+import { Icon, IconName } from "_c_a_icons"
 
-const Avatar = ({ style, name, source, imageStyle }) => (
-  <View style={{ ...styles.circle, ...style }}>
-    {source ? (
-      <Image source={source} style={{ ...styles.image, ...imageStyle }} />
-    ) : (
-      <Text style={styles.initial}>{name.slice(0, 1)}</Text>
-    )}
-  </View>
-)
+const Avatar = ({ style, name, source, imageStyle }) => {
+  let child
+
+  if (source) {
+    child = <Image source={source} style={{ ...styles.image, ...imageStyle }} />
+  } else if (name) {
+    child = <Text style={styles.initial}>{name.slice(0, 1)}</Text>
+  } else {
+    child = (
+      <Icon name={IconName.account} color={hexToRgb(Colors.themeLight, 0.6)} />
+    )
+  }
+
+  return <View style={{ ...styles.circle, ...style }}>{child}</View>
+}
 
 Avatar.propTypes = {
   style: ViewPropTypes.style,

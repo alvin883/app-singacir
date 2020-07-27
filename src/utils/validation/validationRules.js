@@ -1,7 +1,9 @@
 const validationRules = {
   general: {
-    allowEmpty: false,
-    presence: "^Kolom ini tidak boleh kosong",
+    presence: {
+      allowEmpty: false,
+      message: "^Kolom ini tidak boleh kosong",
+    },
   },
 
   email: {

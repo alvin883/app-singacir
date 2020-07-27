@@ -11,11 +11,14 @@
     },
     "dependencies": {
         "@react-native-community/async-storage": "^1.9.0",
+        "@react-native-community/geolocation": "^2.0.2",
         "@react-native-community/masked-view": "^0.1.7",
         "@react-navigation/bottom-tabs": "^5.2.6",
         "@react-navigation/material-top-tabs": "^5.1.8",
         "@react-navigation/native": "^5.1.5",
         "@react-navigation/stack": "^5.2.10",
+        "axios": "^0.19.2",
+        "jwt-decode": "^2.2.0",
         "metro": "^0.56.4",
         "metro-core": "^0.58.0",
         "prop-types": "^15.7.2",
@@ -42,8 +45,8 @@
         "validate.js": "^0.13.1"
     },
     "devDependencies": {
-        "@babel/core": "^7.6.2",
-        "@babel/runtime": "^7.6.2",
+        "@babel/core": "7.9.0",
+        "@babel/runtime": "7.9.0",
         "@react-native-community/eslint-config": "^0.0.5",
         "babel-jest": "^24.9.0",
         "babel-plugin-module-resolver": "^4.0.0",

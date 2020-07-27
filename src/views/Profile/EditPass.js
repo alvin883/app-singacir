@@ -5,6 +5,10 @@ import { Avatar, Button, Input, Text, Content } from "_atoms"
 import { sample, navigationServices, validation } from "_utils"
 import { Spaces } from "_styles"
 import { IconName } from "_c_a_icons"
+import axios from "axios"
+import { auth } from "_actions"
+import { useDispatch, useSelector } from "react-redux"
+import AsyncStorage from "@react-native-community/async-storage"
 
 const EditPass = () => {
   /**
@@ -13,62 +17,40 @@ const EditPass = () => {
   const [state, setState] = useState({
     isChanging: false,
     password: "",
+    passwordWarning: "",
     newPassword: "",
     newPasswordWarning: "",
     confirmPassword: "",
+    confirmPasswordWarning: "",
   })
+  const authState = useSelector(state => state.authReducer)
+  const dispatch = useDispatch()
 
   /**
    * Submit button visual state
    */
   const buttonState = state.isChanging ? "loading" : "default"
 
-  const handleNewPassword = text => {
-    const validate = validation.validate("password", text)
-
-    console.log("handleNewPassword: ", validate, text)
-
-    setState({
-      ...state,
-      newPasswordWarning: validate,
-      newPassword: text,
-    })
+  const checkPassword = (str = state.password) => {
+    return validation.validate("general", str)
   }
 
-  /**
-   * Validate the new password on Front-End side
-   *
-   * 1. NewPass and ConfirmPass should be filled
-   * 2. NewPass and ConfirmPass shold at least 6 chars
-   * 3. NewPass and ConfirmPass shold be the same
-   *
-   * @param {Object} param
-   * @param {String} param.pass The new password
-   * @param {String} param.confirm The confirmed version of new password
-   * @returns {boolean}
-   */
-  const validateNewPassword = ({ pass, confirm }) => {
-    const isFilled = pass.length > 0 && confirm.length > 0
-    const validLength = pass.length > 6 && confirm.length > 6
-    const isSame = pass === confirm
-
-    if (isFilled && !validLength) {
-      return false
-    }
-
-    return isFilled && validLength && isSame
+  const checkNewPassword = (str = state.newPassword) => {
+    return validation.validate("password", str)
   }
 
-  const sendAPI = () => {
-    const isValid = validateNewPassword({
-      pass: state.newPassword,
-      confirm: state.confirmPassword,
-    })
-    console.log("sendAPI: sending request ...")
+  const checkConfirmationPassword = (
+    str = state.confirmPassword,
+    strCompare = state.newPassword,
+  ) => {
+    const isEqualNewPassword = strCompare === str
+    const errorEquality = "Password konfirmasi tidak sama"
+    const errorGeneralValidation = validation.validate("general", str)
 
-    setTimeout(() => {
-      onSuccess()
-    }, 1000)
+    if (errorGeneralValidation) return errorGeneralValidation
+    if (!isEqualNewPassword) return errorEquality
+
+    return null
   }
 
   const onSuccess = () => {
@@ -77,33 +59,77 @@ const EditPass = () => {
       isChanging: false,
     })
 
-    Alert.alert("Success", "Password anda telah berhasil diubah!", [
-      {
-        text: "Oke",
-        onPress: () => navigationServices.Navigate("ProfileLanding"),
-      },
-    ])
+    Alert.alert(
+      "Success",
+      "Password anda telah berhasil diubah! Silahkan login kembali",
+      [
+        {
+          text: "Oke",
+          onPress: () => {
+            AsyncStorage.removeItem("user")
+              .then(() => dispatch(auth.logout(null)))
+              .catch(err => {
+                setState({ ...state, isChanging: true })
+                console.log(err)
+                alert(
+                  "Terjadi kesalahan saat logout, silahkan logout secara manual",
+                )
+              })
+            // navigationServices.Navigate("ProfileLanding")
+          },
+        },
+      ],
+    )
   }
 
-  const onError = () => {
+  const onError = (message = "Terjadi kesalahan, silahkan coba kembali!") => {
     setState({
       ...state,
       isChanging: false,
     })
 
-    Alert.alert("Error", "Terjadi kesalahan, silahkan coba kembali!", [
-      { text: "Oke" },
-    ])
+    Alert.alert("Error", message, [{ text: "Oke" }])
   }
 
   const onCancel = () => navigationServices.GoBack()
 
   const onSubmit = () => {
+    const errorPassword = checkPassword()
+    const errorNewPassword = checkNewPassword()
+    const errorConfirmPassword = checkConfirmationPassword()
+
+    if (errorPassword || errorNewPassword || errorConfirmPassword) {
+      setState({
+        ...state,
+        passwordWarning: errorPassword,
+        newPasswordWarning: errorNewPassword,
+        confirmPasswordWarning: errorConfirmPassword,
+      })
+      return false
+    }
+
     setState({
       ...state,
+      passwordWarning: "",
+      newPasswordWarning: "",
+      confirmPasswordWarning: "",
       isChanging: true,
     })
-    sendAPI()
+
+    axios
+      .put(`users/edit-password?userId=${authState.userId}`, {
+        password: state.newPassword,
+      })
+      .then(response => {
+        const data = response.data
+        console.log("response:", data)
+        onSuccess()
+      })
+      .catch(error => {
+        const data = error.response.data
+        console.log("response:", data)
+        onError(data.message)
+      })
   }
 
   return (
@@ -121,13 +147,17 @@ const EditPass = () => {
             style={{ ...styles.input, marginTop: 0 }}
             label="Kata Sandi"
             placeholder="Masukkan Kata Sandi lama ..."
+            warning={state.passwordWarning}
+            status={state.passwordWarning ? "error" : "normal"}
             secureTextEntry={true}
-            onChangeText={text =>
+            onChangeText={text => {
+              const warning = checkPassword(text)
               setState({
                 ...state,
                 password: text,
+                passwordWarning: warning,
               })
-            }
+            }}
           />
 
           <Input
@@ -137,20 +167,36 @@ const EditPass = () => {
             warning={state.newPasswordWarning}
             status={state.newPasswordWarning ? "error" : "normal"}
             secureTextEntry={true}
-            onChangeText={handleNewPassword}
+            onChangeText={text => {
+              const warning = checkNewPassword(text)
+              const confirmWarning = checkConfirmationPassword(
+                state.confirmPassword,
+                text,
+              )
+              setState({
+                ...state,
+                newPassword: text,
+                newPasswordWarning: warning,
+                confirmPasswordWarning: confirmWarning,
+              })
+            }}
           />
 
           <Input
             style={styles.input}
             label="Konfirmasi Kata Sandi Baru"
             placeholder="Kata Sandi baru anda ..."
+            warning={state.confirmPasswordWarning}
+            status={state.confirmPasswordWarning ? "error" : "normal"}
             secureTextEntry={true}
-            onChangeText={text =>
+            onChangeText={text => {
+              const warning = checkConfirmationPassword(text)
               setState({
                 ...state,
                 confirmPassword: text,
+                confirmPasswordWarning: warning,
               })
-            }
+            }}
           />
         </View>
 

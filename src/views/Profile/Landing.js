@@ -4,51 +4,103 @@ import PropTypes from "prop-types"
 import { Divider, Button } from "_atoms"
 import { ProfileHeader, ProfileButton, PairTitleValue } from "_molecules"
 import { Spaces, Colors } from "_styles"
-import { convertToCurrency, sample, navigationServices } from "_utils"
-import { useDispatch } from "react-redux"
+import { convertToCurrency, navigationServices } from "_utils"
+import { useDispatch, useSelector } from "react-redux"
 import { auth } from "_actions"
 import AsyncStorage from "@react-native-community/async-storage"
 import { useFocusEffect } from "@react-navigation/native"
+import axios from "axios"
+import Sample1 from "_assets/images/sample-1.jpg"
+import { Loading } from "_views"
 
 const Landing = () => {
   const dispatch = useDispatch()
-  const data = sample.Profile
-  const [isLoading, setIsLoading] = useState(false)
+  const authState = useSelector(state => state.authReducer)
+  const defaultState = {
+    name: "",
+    role: "User",
+    image: null,
+    saldo: 0,
+    points: 0,
+    donation: 0,
+    email: authState.email,
+    phoneNumber: null,
+  }
+  const [state, setState] = useState(defaultState)
+  const [isFetching, setFetching] = useState(true)
+  const [isLoggingOut, setLoggingOut] = useState(false)
 
   const clickEdit = () => {
-    if (isLoading) return false
-    navigationServices.Navigate("ProfileEdit")
+    if (isLoggingOut) return false
+    navigationServices.Navigate("ProfileEdit", { data: state })
   }
 
   const clickSaldo = () => {
-    if (isLoading) return false
+    if (isLoggingOut) return false
     navigationServices.Navigate("ProfileBalanceHistory")
   }
 
   const clickPoint = () => {
-    if (isLoading) return false
+    if (isLoggingOut) return false
     navigationServices.Navigate("ProfileDonation")
   }
 
   const clickDonation = () => {
-    if (isLoading) return false
+    if (isLoggingOut) return false
     navigationServices.Navigate("ProfileDonationHistory")
   }
 
   const clickChangePass = () => {
-    if (isLoading) return false
+    if (isLoggingOut) return false
     navigationServices.Navigate("ProfileEditPass")
   }
 
   const clickLogout = () => {
-    setIsLoading(true)
+    setLoggingOut(true)
 
-    AsyncStorage.removeItem("user")
+    AsyncStorage.removeItem("token")
       .then(() => dispatch(auth.logout(null)))
       .catch(err => {
-        setIsLoading(false)
+        setLoggingOut(false)
         console.log(err)
         alert("Terjadi kesalahan saat logout, silahkan coba lagi")
+      })
+  }
+
+  const fetchData = () => {
+    const profile = axios.get(`users/showUser?userId=${authState.userId}`)
+    const balance = axios.get(
+      `userbalance/showUserBalance?userId=${authState.userId}`,
+    )
+
+    axios
+      .all([profile, balance])
+      .then(
+        axios.spread((...response) => {
+          const resProfile = response[0]
+          const resBalance = response[1]
+          const dataProfile = resProfile.data.data
+          const dataBalance = resBalance.data.data
+
+          // console.log("Profile/landing,js - fetchData: ", {
+          //   dataProfile,
+          //   dataBalance,
+          // })
+
+          setState({
+            ...state,
+            name: dataProfile.fullname,
+            email: dataProfile.email,
+            phoneNumber: dataProfile.phoneNumber,
+            saldo: parseInt(dataBalance.balance),
+            points: parseInt(dataBalance.point),
+          })
+          setFetching(false)
+        }),
+      )
+      .catch(error => {
+        console.log(error)
+        alert("Ada kesalahan ketika mengambil data")
       })
   }
 
@@ -56,16 +108,21 @@ const Landing = () => {
     useCallback(() => {
       StatusBar.setBackgroundColor(Colors.themeLight)
       StatusBar.setBarStyle("dark-content")
+      fetchData()
     }, []),
   )
+
+  if (isFetching) {
+    return <Loading />
+  }
 
   return (
     <ScrollView>
       <View style={styles.wrapper}>
         <ProfileHeader
-          photo={data.image}
-          name={data.name}
-          role={data.role}
+          photo={state.image}
+          name={state.name}
+          role={state.role}
           onClickEdit={clickEdit}
         />
 
@@ -75,7 +132,7 @@ const Landing = () => {
           <ProfileButton
             style={{ ...styles.profileButton, marginTop: 0 }}
             title="Kantong Semar"
-            value={"Rp " + convertToCurrency(data.saldo)}
+            value={"Rp " + convertToCurrency(0, 0, false)}
             actionText="History"
             onClick={clickSaldo}
             colorPreset="secondary"
@@ -85,7 +142,7 @@ const Landing = () => {
           <ProfileButton
             style={styles.profileButton}
             title="Points"
-            value={convertToCurrency(data.points)}
+            value={convertToCurrency(state.points, 0, false)}
             actionText="Donasi"
             onClick={clickPoint}
           />
@@ -93,7 +150,7 @@ const Landing = () => {
           <ProfileButton
             style={styles.profileButton}
             title="Total Donasi Anda"
-            value={convertToCurrency(data.donation)}
+            value={convertToCurrency(state.donation, 0, false)}
             actionText="History"
             onClick={clickDonation}
           />
@@ -101,11 +158,11 @@ const Landing = () => {
 
         <Divider style={styles.divider} />
 
-        <PairTitleValue title="Email" value={data.email} stylePreset="table" />
+        <PairTitleValue title="Email" value={state.email} stylePreset="table" />
         <PairTitleValue
           style={{ marginTop: 14 }}
           title="Nomor HP"
-          value={data.phoneNumber}
+          value={state.phoneNumber}
           stylePreset="table"
         />
 
@@ -122,7 +179,7 @@ const Landing = () => {
           text="Logout"
           size="large"
           onPress={clickLogout}
-          state={isLoading ? "loading" : "default"}
+          state={isLoggingOut ? "loading" : "default"}
         />
       </View>
     </ScrollView>
